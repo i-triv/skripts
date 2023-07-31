@@ -1,3 +1,43 @@
+
+import requests
+
+def get_merged_branches():
+    base_url = 'https://your-bitbucket-server-url/rest/api/1.0'
+    project_key = 'your_project_key'
+    repo_slug = 'your_repo_slug'
+    username = 'your_username'
+    password = 'your_password'
+
+    branches_url = f'{base_url}/projects/{project_key}/repos/{repo_slug}/compare/changes?from=master'
+    response = requests.get(branches_url, auth=(username, password))
+
+    if response.status_code == 200:
+        merged_branches = []
+        changes = response.json()['changes']
+      
+        for change in changes:
+            to_hash = change['toHash']
+            link_url = f'{base_url}/projects/{project_key}/repos/{repo_slug}/commits/{to_hash}/branches'
+            branch_response = requests.get(link_url, auth=(username, password))
+
+            if branch_response.status_code == 200:
+                branch_name = branch_response.json()['values'][0]['displayId']
+                merged_branches.append(branch_name)
+
+        return merged_branches
+    else:
+        print(f'Response status code: {response.status_code}')
+        return None
+
+merged_branches_list = get_merged_branches()
+if merged_branches_list:
+    print("Merged branches:")
+    for branch in merged_branches_list:
+        print(branch)
+else:
+    print("Error occurred while fetching merged branches.")
+
+----------------
 import requests
 
 def get_merged_branches():
